@@ -71,7 +71,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- JavaFX Maven Plugin to run the app: mvn -Pdev javafx:run -->
+            <!-- JavaFX Maven Plugin to run the app: mvn javafx:run -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
