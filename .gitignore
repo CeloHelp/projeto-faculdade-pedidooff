@@ -1,0 +1,18 @@
+# Java and Maven
+/target/
+*.iml
+/.idea/
+/.project
+/.classpath
+/.settings/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# JavaFX caches
+hs_err_pid*
