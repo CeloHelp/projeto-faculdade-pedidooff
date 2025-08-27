@@ -1,11 +1,10 @@
 package com.pedidooff;
 
+import com.pedidooff.model.Produto;
+import com.pedidooff.service.ProdutoService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Configuration
 public class AppConfig {
@@ -14,9 +13,18 @@ public class AppConfig {
     CommandLineRunner ensureDbDirectory() {
         return args -> {
             String userHome = System.getProperty("user.home");
-            Path dir = Path.of(userHome, "PedidoFacil");
-            if (Files.notExists(dir)) {
-                Files.createDirectories(dir);
+            java.nio.file.Path dir = java.nio.file.Path.of(userHome, "PedidoFacil");
+            if (java.nio.file.Files.notExists(dir)) {
+                java.nio.file.Files.createDirectories(dir);
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner seedSampleData(ProdutoService service) {
+        return args -> {
+            if (service.listar().isEmpty()) {
+                service.salvar(new Produto("Produto Exemplo", 9.99));
             }
         };
     }
