@@ -1,4 +1,5 @@
 module com.pedidooff {
+    requires javafx.graphics;
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
@@ -13,6 +14,7 @@ module com.pedidooff {
     requires jakarta.persistence;
 
     opens com.pedidooff to javafx.fxml, spring.core, spring.beans, spring.context;
+    opens com.pedidooff.controller to javafx.fxml, spring.core, spring.beans, spring.context;
     opens com.pedidooff.service to spring.core, spring.beans, spring.context;
     opens com.pedidooff.repository to spring.core, spring.beans, spring.context;
     opens com.pedidooff.model to org.hibernate.orm.core, spring.core, spring.beans, spring.context;

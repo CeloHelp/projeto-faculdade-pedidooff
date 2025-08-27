@@ -16,9 +16,13 @@ public class MainApp extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("PedidoOff");
-        // Janela vazia por enquanto
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/produtos.fxml"));
+        loader.setControllerFactory(springContext::getBean);
+        Parent root = loader.load();
+
+        primaryStage.setTitle("PedidoOff - Produtos");
+        primaryStage.setScene(new Scene(root, 600, 400));
         primaryStage.show();
     }
 

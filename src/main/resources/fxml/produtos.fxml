@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21.0.3" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.pedidooff.controller.ProdutoController">
+    <top>
+        <ToolBar>
+            <Label text="Nome:"/>
+            <TextField fx:id="txtNome" promptText="Nome do produto" prefWidth="200"/>
+            <Label text="Preço:"/>
+            <TextField fx:id="txtPreco" promptText="0.00" prefWidth="100"/>
+            <Button text="Adicionar" onAction="#onAdicionar"/>
+            <Button text="Remover Selecionado" onAction="#onRemoverSelecionado"/>
+        </ToolBar>
+    </top>
+    <center>
+        <TableView fx:id="tableProdutos">
+            <columns>
+                <TableColumn fx:id="colNome" text="Nome" prefWidth="300"/>
+                <TableColumn fx:id="colPreco" text="Preço" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </center>
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+</BorderPane>

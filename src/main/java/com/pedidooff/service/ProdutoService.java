@@ -15,7 +15,12 @@ public class ProdutoService {
         this.repository = repository;
     }
 
+    @Transactional
     public Produto salvar(Produto p) { return repository.save(p); }
 
+    @Transactional(readOnly = true)
     public List<Produto> listar() { return repository.findAll(); }
+
+    @Transactional
+    public void remover(Produto p) { repository.delete(p); }
 }
