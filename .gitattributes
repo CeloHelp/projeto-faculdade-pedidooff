@@ -1,0 +1,32 @@
+# Normalize end-of-line to LF in the repository to avoid CRLF/LF churn across OSes
+* text=auto eol=lf
+
+# Explicit LF for common text/code files
+*.java text eol=lf
+*.kt text eol=lf
+*.xml text eol=lf
+*.fxml text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+*.gradle text eol=lf
+*.gitattributes text eol=lf
+*.gitignore text eol=lf
+
+# Windows scripts with CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Mark binary files to prevent line ending normalization
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.db binary
