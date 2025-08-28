@@ -4,6 +4,13 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class MainApp extends Application {
 
@@ -11,8 +18,18 @@ public class MainApp extends Application {
 
     @Override
     public void init() {
-        springContext = new SpringApplicationBuilder(PedidoOffApplication.class)
-                .run();
+        // Garantir que o diretório do banco exista antes de iniciar o Spring/JPA
+        try {
+            String userHome = System.getProperty("user.home");
+            Path dir = Paths.get(userHome, "PedidoFacil");
+            if (!Files.exists(dir)) {
+                Files.createDirectories(dir);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Falha ao criar diretório do banco de dados", e);
+        }
+
+        springContext = new SpringApplicationBuilder(PedidoOffApplication.class).run();
     }
 
     @Override
@@ -28,9 +45,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() {
-        if (springContext != null) {
-            springContext.close();
-        }
+        springContext.close();
     }
 
     public static void main(String[] args) {
