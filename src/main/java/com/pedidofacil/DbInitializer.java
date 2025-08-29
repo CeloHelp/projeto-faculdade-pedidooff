@@ -1,6 +1,8 @@
 package com.pedidofacil;
 
+import com.pedidofacil.models.Customer;
 import com.pedidofacil.models.Product;
+import com.pedidofacil.repositories.CustomerRepository;
 import com.pedidofacil.repositories.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,8 @@ public class DbInitializer {
     @Bean
     CommandLineRunner seedProductsPf(ProductRepository productRepository) {
         return args -> {
-            if (productRepository.count() == 0) {
+            // Se houver menos de 7 produtos, completamos a lista base
+            if (productRepository.count() < 7) {
                 Product cimento = new Product(
                         "Cimento Itaú",
                         "Itaú",
@@ -45,9 +48,59 @@ public class DbInitializer {
                         "un",
                         new BigDecimal("10.00")
                 );
+                Product areia = new Product(
+                        "Areia Média",
+                        "",
+                        "m³",
+                        new BigDecimal("120.00")
+                );
+                Product brita = new Product(
+                        "Brita 1",
+                        "",
+                        "m³",
+                        new BigDecimal("140.00")
+                );
+                Product tijolo = new Product(
+                        "Tijolo 6 furos",
+                        "",
+                        "milheiro",
+                        new BigDecimal("850.00")
+                );
+                Product cimentoVotoran = new Product(
+                        "Cimento Votoran",
+                        "Votoran",
+                        "saco 50kg",
+                        new BigDecimal("39.50")
+                );
+                Product argamassa = new Product(
+                        "Argamassa AC1",
+                        "Quartzolit",
+                        "saco 20kg",
+                        new BigDecimal("24.90")
+                );
+
                 productRepository.save(cimento);
                 productRepository.save(sifao);
-                log.info("[PF] Produtos iniciais inseridos (2 itens).");
+                productRepository.save(areia);
+                productRepository.save(brita);
+                productRepository.save(tijolo);
+                productRepository.save(cimentoVotoran);
+                productRepository.save(argamassa);
+                log.info("[PF] Produtos base garantidos (count: {}).", productRepository.count());
+            }
+        };
+    }
+
+    @Bean
+    CommandLineRunner seedCustomersPf(CustomerRepository customerRepository) {
+        return args -> {
+            // Se houver menos de 4 clientes, completamos a lista base
+            if (customerRepository.count() < 4) {
+                customerRepository.save(new Customer("João Silva", "(11) 90000-0001"));
+                customerRepository.save(new Customer("Maria Souza", "(11) 90000-0002"));
+                customerRepository.save(new Customer("Carlos Pereira", "(11) 90000-0003"));
+                customerRepository.save(new Customer("Ana Oliveira", "(11) 90000-0004"));
+                log.info("[PF] Clientes base garantidos (count: {}).", customerRepository.count());
             }
         };
     }

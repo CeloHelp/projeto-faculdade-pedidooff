@@ -1,7 +1,7 @@
 package com.pedidooff.controller;
 
 import com.pedidofacil.models.Product;
-import com.pedidofacil.services.ProductService;
+import com.pedidofacil.services.IProductService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,7 +17,7 @@ import java.util.Locale;
 @Component
 public class ProdutoController {
 
-    private final ProductService service;
+    private final IProductService service;
 
     @FXML private TextField txtNome;
     @FXML private TextField txtMarca;
@@ -32,7 +32,7 @@ public class ProdutoController {
 
     private final ObservableList<Product> dados = FXCollections.observableArrayList();
 
-    public ProdutoController(ProductService service) {
+    public ProdutoController(IProductService service) {
         this.service = service;
     }
 

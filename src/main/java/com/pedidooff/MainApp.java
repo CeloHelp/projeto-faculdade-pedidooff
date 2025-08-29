@@ -34,12 +34,12 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/produtos.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
         loader.setControllerFactory(springContext::getBean);
         Parent root = loader.load();
 
-        primaryStage.setTitle("PedidoOff - Produtos");
-        primaryStage.setScene(new Scene(root, 600, 400));
+        primaryStage.setTitle("PedidoOff - Principal");
+        primaryStage.setScene(new Scene(root, 900, 600));
         primaryStage.show();
     }
 

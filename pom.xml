@@ -79,9 +79,26 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.pedidooff.MainApp</mainClass>
-                    <!-- Forçar o uso do mesmo Java que o Maven está utilizando (JDK 17) -->
-                    <executable>${java.home}/bin/java</executable>
+                    <!-- Removido 'executable' para evitar problemas de path com espaços no Windows -->
                 </configuration>
+            </plugin>
+
+            <!-- Exec plugin as alternativa: mvn -DskipTests exec:java -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <mainClass>com.pedidooff.MainApp</mainClass>
+                    <classpathScope>runtime</classpathScope>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
