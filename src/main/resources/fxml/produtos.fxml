@@ -3,23 +3,29 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21.0.3" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/17.0.11" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.pedidooff.controller.ProdutoController">
     <top>
         <ToolBar>
             <Label text="Nome:"/>
-            <TextField fx:id="txtNome" promptText="Nome do produto" prefWidth="200"/>
+            <TextField fx:id="txtNome" promptText="Digite o nome do produto" prefWidth="220"/>
+            <Label text="Marca:"/>
+            <TextField fx:id="txtMarca" promptText="Marca (opcional)" prefWidth="140"/>
+            <Label text="Unidade:"/>
+            <TextField fx:id="txtUnidade" promptText="Unidade (ex: un, saco 50kg)" prefWidth="170"/>
             <Label text="Preço:"/>
-            <TextField fx:id="txtPreco" promptText="0.00" prefWidth="100"/>
+            <TextField fx:id="txtPreco" promptText="R$ 0,00" prefWidth="110"/>
             <Button text="Adicionar" onAction="#onAdicionar"/>
-            <Button text="Remover Selecionado" onAction="#onRemoverSelecionado"/>
+            <Button fx:id="btnRemover" text="Remover Selecionado" onAction="#onRemoverSelecionado"/>
         </ToolBar>
     </top>
     <center>
         <TableView fx:id="tableProdutos">
             <columns>
-                <TableColumn fx:id="colNome" text="Nome" prefWidth="300"/>
-                <TableColumn fx:id="colPreco" text="Preço" prefWidth="150"/>
+                <TableColumn fx:id="colNome" text="Nome" prefWidth="250"/>
+                <TableColumn fx:id="colMarca" text="Marca" prefWidth="150"/>
+                <TableColumn fx:id="colUnidade" text="Unidade" prefWidth="140"/>
+                <TableColumn fx:id="colPreco" text="Preço" prefWidth="120"/>
             </columns>
         </TableView>
     </center>

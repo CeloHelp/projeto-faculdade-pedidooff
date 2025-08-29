@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.pedidofacil.views.HistoryWindowController">
+
+    <top>
+        <HBox spacing="8">
+            <padding>
+                <Insets topRightBottomLeft="10"/>
+            </padding>
+            <Label text="Início:"/>
+            <DatePicker fx:id="dpStart"/>
+            <Label text="Fim:"/>
+            <DatePicker fx:id="dpEnd"/>
+            <Button text="Buscar" onAction="#onSearch"/>
+            <Button text="Exportar CSV" onAction="#onExport"/>
+            <Label text="Status:"/>
+            <Label fx:id="lblStatus"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TableView fx:id="tblOrders">
+            <columns>
+                <TableColumn fx:id="colNumber" text="Número" prefWidth="120"/>
+                <TableColumn fx:id="colDate" text="Data" prefWidth="200"/>
+                <TableColumn fx:id="colPayment" text="Pagamento" prefWidth="150"/>
+                <TableColumn fx:id="colCustomer" text="Cliente" prefWidth="220"/>
+                <TableColumn fx:id="colTotal" text="Total" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>

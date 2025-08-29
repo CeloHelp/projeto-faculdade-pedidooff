@@ -18,9 +18,10 @@
     <description>Aplicação JavaFX + Spring Boot com SQLite - Projeto PedidoOff</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javafx.version>21.0.3</javafx.version>
+        <!-- Alinhar JavaFX com JDK 17 (LTS) para evitar incompatibilidades com JDKs mais novos -->
+        <javafx.version>17.0.11</javafx.version>
         <sqlite.jdbc.version>3.45.3.0</sqlite.jdbc.version>
     </properties>
 
@@ -78,7 +79,26 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.pedidooff.MainApp</mainClass>
+                    <!-- Removido 'executable' para evitar problemas de path com espaços no Windows -->
                 </configuration>
+            </plugin>
+
+            <!-- Exec plugin as alternativa: mvn -DskipTests exec:java -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <mainClass>com.pedidooff.MainApp</mainClass>
+                    <classpathScope>runtime</classpathScope>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
