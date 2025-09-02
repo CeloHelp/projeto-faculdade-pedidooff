@@ -19,10 +19,12 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.springframework.stereotype.Component;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -41,12 +43,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 
 @Component
 public class ReportsWindowController implements Initializable {
 
+    private static final String PREF_EXPORT_DIR = "export_dir";
+
     private final ReportsViewModel vm;
     private Path lastExportDir;
+    private final Preferences prefs = Preferences.userNodeForPackage(ReportsWindowController.class);
 
     @FXML private DatePicker dpStart;
     @FXML private DatePicker dpEnd;
@@ -232,6 +238,32 @@ public class ReportsWindowController implements Initializable {
         }
     }
 
+    @FXML
+    public void onChooseExportFolder() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        String current = prefs.get(PREF_EXPORT_DIR, null);
+        if (current != null) {
+            File f = new File(current);
+            if (f.exists() && f.isDirectory()) {
+                chooser.setInitialDirectory(f);
+            }
+        } else {
+            File home = new File(System.getProperty("user.home"));
+            if (home.exists()) chooser.setInitialDirectory(home);
+        }
+        chooser.setTitle("Escolher Pasta de Exportação");
+        Stage stage = (Stage) piePayments.getScene().getWindow();
+        File selected = chooser.showDialog(stage);
+        if (selected != null) {
+            prefs.put(PREF_EXPORT_DIR, selected.getAbsolutePath());
+            lastExportDir = selected.toPath();
+            Alert ok = new Alert(Alert.AlertType.INFORMATION);
+            ok.setHeaderText("Pasta de exportação atualizada");
+            ok.setContentText(selected.getAbsolutePath());
+            ok.showAndWait();
+        }
+    }
+
     private boolean openWithDesktop(Path dir) {
         try {
             if (Desktop.isDesktopSupported()) {
@@ -264,8 +296,19 @@ public class ReportsWindowController implements Initializable {
     }
 
     private Path getExportBaseDir() {
-        String userHome = System.getProperty("user.home");
-        return Paths.get(userHome, "PedidoFacil", "exports");
+        String configured = prefs.get(PREF_EXPORT_DIR, null);
+        Path base;
+        if (configured != null && !configured.isBlank()) {
+            base = Paths.get(configured);
+        } else {
+            String userHome = System.getProperty("user.home");
+            base = Paths.get(userHome, "PedidoFacil", "exports");
+        }
+        try {
+            Files.createDirectories(base);
+        } catch (IOException ignored) {
+        }
+        return base;
     }
 
     private String fmtDec(BigDecimal v) {

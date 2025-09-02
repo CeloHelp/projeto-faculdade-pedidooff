@@ -19,6 +19,7 @@
                         <Button text="Atualizar" onAction="#onRefresh"/>
                         <Button text="Exportar CSV" onAction="#onExport"/>
                         <Button text="Abrir Pasta" onAction="#onOpenFolder"/>
+                        <Button text="Pasta de Exportação..." onAction="#onChooseExportFolder"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Button text="Fechar" onAction="#onClose"/>
                     </children>
