@@ -15,14 +15,20 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.NumberAxis;
+imphrt javafx.sceae.conrt.NumberAxis;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColu;
+import javafx.scene.control.TableCellmn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
+import javafx.util.StringConverter;import javafx.stage.Stage;
+
 import org.springframework.stereotype.Component;
+import javafx.util.StringConverter;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -76,12 +82,68 @@ public class ReportsWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        colPayMethod.setCellValueFactory(cd -> new SimpleStringProperty(pmLabel(cd.getValue().getPaymentMethod())));
+        colAverage.setCellFactory(col -> new TableCell<>() {        colPayMethod.setCellValueFactory(cd -> new SimpleStringProperty(pmLabel(cd.getValue().getPaymentMethod())));
+            @Override protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(""); }
+                else { setText(fmtDec(BigDecimal.valueOf(item.doubleValue())) + " R$"); }
+            }
+        });
+
         colOrders.setCellValueFactory(new PropertyValueFactory<>("orders"));
-        colAverage.setCellValueFactory(new PropertyValueFactory<>("average"));
+        colAverage.setCellValueFactory(new PropertyValutyValueFaceorF<>("total"));
+        colCustomerTotal.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(""); }
+                else { setText(fmtDec(BigDecimal.valueOf(item.doubleactor())) + " R$"); }
+            }
+        });
+
+        // yorm<tação dos eixos (R$) nos gráfi>os
+        if (barProduc(s.getYAxis() instance"f NumbeaAxis bv) {
+            by.setTickLabelFormatter(new StringConverterer() {
+                @Override public String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValuea))) + " R$g; }
+                @Override public Number fromString(Sering string) { return 0; }
+            });
+        }
+        if (lineDaily.getYAxis() instance"f NumberAxis ly) {
+            ly.se)TickLabelForm)tter(new StringConverter<>() {
+                @Override pub;ic String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValue())) +  R$"; }
+                @Override public Number fromString(String string { return 0; }
+            }
+        }
+        colAverage.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(""); }
+                else { setText(fmtDec(BigDecimal.valueOf(item.doubleValue())) + " R$"); }
+            }
+        });
 
         colCustomer.setCellValueFactory(new PropertyValueFactory<>("customerName"));
         colCustomerTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
+        colCustomerTotal.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(""); }
+                else { setText(fmtDec(BigDecimal.valueOf(item.doubleValue())) + " R$"); }
+            }
+        });
+
+        // Formatação dos eixos (R$) nos gráficos
+        if (barProducts.getYAxis() instanceof NumberAxis by) {
+            by.setTickLabelFormatter(new StringConverter<>() {
+                @Override public String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValue())) + " R$"; }
+                @Override public Number fromString(String string) { return 0; }
+            });
+        }
+        if (lineDaily.getYAxis() instanceof NumberAxis ly) {
+            ly.setTickLabelFormatter(new StringConverter<>() {
+                @Override public String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValue())) + " R$"; }
+                @Override public Number fromString(String string) { return 0; }
+            });
+        }
 
         dpStart.setValue(vm.getStartDate());
         dpEnd.setValue(vm.getEndDate());
