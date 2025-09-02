@@ -17,6 +17,8 @@
                         <Label text="Fim:"/>
                         <DatePicker fx:id="dpEnd"/>
                         <Button text="Atualizar" onAction="#onRefresh"/>
+                        <Button text="Exportar CSV" onAction="#onExport"/>
+                        <Button text="Abrir Pasta" onAction="#onOpenFolder"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Button text="Fechar" onAction="#onClose"/>
                     </children>
