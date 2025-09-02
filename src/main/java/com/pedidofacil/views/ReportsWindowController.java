@@ -6,6 +6,7 @@ import com.pedidofacil.repositories.projections.ProductSalesView;
 import com.pedidofacil.repositories.projections.TicketAverageView;
 import com.pedidofacil.repositories.projections.TopCustomerView;
 import com.pedidofacil.viewmodels.ReportsViewModel;
+import com.pedidofacil.models.PaymentMethod;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -75,7 +76,7 @@ public class ReportsWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        colPayMethod.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getPaymentMethod().name()));
+        colPayMethod.setCellValueFactory(cd -> new SimpleStringProperty(pmLabel(cd.getValue().getPaymentMethod())));
         colOrders.setCellValueFactory(new PropertyValueFactory<>("orders"));
         colAverage.setCellValueFactory(new PropertyValueFactory<>("average"));
 
@@ -159,7 +160,7 @@ public class ReportsWindowController implements Initializable {
             daily.add("dia;total");
             for (DailySalesView d : vm.getDailySales()) {
                 if (d == null || d.getDay() == null || d.getTotal() == null) continue;
-                daily.add(d.getDay() + ";" + fmtDec(d.getTotal()));
+                daily.add(d.getDay() + ";" + fmtDec(d.getTotal()) + " R$");
             }
             writeCsv(dir.resolve("daily_sales.csv"), daily);
 
@@ -168,7 +169,7 @@ public class ReportsWindowController implements Initializable {
             prods.add("produto;quantidade;total");
             for (ProductSalesView p : vm.getProductSales()) {
                 if (p == null || p.getProductName() == null) continue;
-                prods.add(p.getProductName() + ";" + fmtDec(p.getQuantity()) + ";" + fmtDec(p.getTotal()));
+                prods.add(p.getProductName() + ";" + fmtDec(p.getQuantity()) + ";" + fmtDec(p.getTotal()) + " R$");
             }
             writeCsv(dir.resolve("top_products.csv"), prods);
 
@@ -177,7 +178,7 @@ public class ReportsWindowController implements Initializable {
             pays.add("pagamento;total");
             for (PaymentDistributionView pd : vm.getPaymentDistribution()) {
                 if (pd == null || pd.getPaymentMethod() == null || pd.getTotal() == null) continue;
-                pays.add(pd.getPaymentMethod().name() + ";" + fmtDec(pd.getTotal()));
+                pays.add(pmLabel(pd.getPaymentMethod()) + ";" + fmtDec(pd.getTotal()) + " R$");
             }
             writeCsv(dir.resolve("payment_distribution.csv"), pays);
 
@@ -186,7 +187,7 @@ public class ReportsWindowController implements Initializable {
             tickets.add("pagamento;pedidos;ticket_medio");
             for (TicketAverageView t : vm.getTicketAverages()) {
                 if (t == null || t.getPaymentMethod() == null || t.getOrders() == null || t.getAverage() == null) continue;
-                tickets.add(t.getPaymentMethod().name() + ";" + t.getOrders() + ";" + fmtDec(BigDecimal.valueOf(t.getAverage())));
+                tickets.add(pmLabel(t.getPaymentMethod()) + ";" + t.getOrders() + ";" + fmtDec(BigDecimal.valueOf(t.getAverage())) + " R$");
             }
             writeCsv(dir.resolve("ticket_average.csv"), tickets);
 
@@ -195,7 +196,7 @@ public class ReportsWindowController implements Initializable {
             customers.add("cliente;total");
             for (TopCustomerView c : vm.getTopCustomers()) {
                 if (c == null || c.getCustomerName() == null || c.getTotal() == null) continue;
-                customers.add(c.getCustomerName() + ";" + fmtDec(c.getTotal()));
+                customers.add(c.getCustomerName() + ";" + fmtDec(c.getTotal()) + " R$");
             }
             writeCsv(dir.resolve("top_customers.csv"), customers);
 
@@ -331,7 +332,7 @@ public class ReportsWindowController implements Initializable {
 
             var pieData = vm.getPaymentDistribution().stream()
                     .filter(p -> p != null && p.getPaymentMethod() != null && p.getTotal() != null)
-                    .map(p -> new PieChart.Data(p.getPaymentMethod().name(), p.getTotal().doubleValue()))
+                    .map(p -> new PieChart.Data(pmLabel(p.getPaymentMethod()), p.getTotal().doubleValue()))
                     .toList();
             piePayments.setData(FXCollections.observableArrayList(pieData));
 
@@ -358,5 +359,16 @@ public class ReportsWindowController implements Initializable {
             barProducts.getData().clear();
             lineDaily.getData().clear();
         }
+    }
+
+    private String pmLabel(PaymentMethod m) {
+        if (m == null) return "";
+        return switch (m) {
+            case CASH -> "Dinheiro";
+            case PIX -> "PIX";
+            case DEBIT -> "Débito";
+            case CREDIT -> "Crédito";
+            case CREDITSALE -> "Crediário";
+        };
     }
 }
