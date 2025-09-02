@@ -18,6 +18,7 @@
                 <TextField fx:id="txtUnitPrice" promptText="Preço Unit" prefWidth="120"/>
                 <Button text="Adicionar item" onAction="#onAddItem"/>
                 <Button text="Histórico" onAction="#onOpenHistory"/>
+                <Button text="Relatórios" onAction="#onOpenReports"/>
             </HBox>
         </VBox>
     </top>
