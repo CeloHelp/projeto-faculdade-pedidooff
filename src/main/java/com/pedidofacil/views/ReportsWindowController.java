@@ -212,9 +212,13 @@ public class ReportsWindowController implements Initializable {
         try {
             Path dir = (lastExportDir != null) ? lastExportDir : getExportBaseDir();
             Files.createDirectories(dir); // garante que existe
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(dir.toFile());
-            } else {
+
+            boolean opened = openWithDesktop(dir);
+            if (!opened) {
+                opened = openWithShell(dir);
+            }
+
+            if (!opened) {
                 Alert inf = new Alert(Alert.AlertType.INFORMATION);
                 inf.setHeaderText("Abra a pasta manualmente");
                 inf.setContentText(dir.toString());
@@ -225,6 +229,37 @@ public class ReportsWindowController implements Initializable {
             er.setHeaderText("Não foi possível abrir a pasta");
             er.setContentText(String.valueOf(e.getMessage()));
             er.showAndWait();
+        }
+    }
+
+    private boolean openWithDesktop(Path dir) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.OPEN)) {
+                    desktop.open(dir.toFile());
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+            // tenta fallback via shell
+        }
+        return false;
+    }
+
+    private boolean openWithShell(Path dir) {
+        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        try {
+            if (os.contains("win")) {
+                new ProcessBuilder("explorer.exe", dir.toString()).start();
+            } else if (os.contains("mac")) {
+                new ProcessBuilder("open", dir.toString()).start();
+            } else {
+                new ProcessBuilder("xdg-open", dir.toString()).start();
+            }
+            return true;
+        } catch (IOException ignored) {
+            return false;
         }
     }
 
