@@ -16,6 +16,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableCell;
@@ -99,6 +100,13 @@ public class ReportsWindowController implements Initializable {
                 else { setText(fmtDec(BigDecimal.valueOf(item.doubleValue())) + " R$"); }
             }
         });
+
+        // Configurações visuais para destacar o gráfico diário
+        lineDaily.setCreateSymbols(false);
+        lineDaily.setAnimated(false);
+        if (lineDaily.getXAxis() instanceof CategoryAxis cx) {
+            cx.setTickLabelRotation(45);
+        }
 
         // Formatação dos eixos (R$) nos gráficos
         if (barProducts.getYAxis() instanceof NumberAxis by) {
@@ -383,11 +391,20 @@ public class ReportsWindowController implements Initializable {
                 if (d == null || d.getDay() == null) continue;
                 points.put(d.getDay(), d.getTotal() == null ? BigDecimal.ZERO : d.getTotal());
             }
-            // Se start e end estão definidos, preenche dias faltantes com 0
+            // Determina intervalo (usa filtro selecionado; se vazio, usa min/max retornado)
+            java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
             java.time.LocalDate s = vm.getStartDate();
             java.time.LocalDate e = vm.getEndDate();
+            if (s == null || e == null) {
+                java.util.Optional<java.time.LocalDate> min = points.keySet().stream().map(k -> java.time.LocalDate.parse(k, df)).min(java.time.LocalDate::compareTo);
+                java.util.Optional<java.time.LocalDate> max = points.keySet().stream().map(k -> java.time.LocalDate.parse(k, df)).max(java.time.LocalDate::compareTo);
+                if (min.isPresent() && max.isPresent()) {
+                    s = min.get();
+                    e = max.get();
+                }
+            }
+            // Preenche dias faltantes com 0 dentro do intervalo
             if (s != null && e != null && !e.isBefore(s)) {
-                java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 java.time.LocalDate cur = s;
                 while (!cur.isAfter(e)) {
                     String key = cur.format(df);
