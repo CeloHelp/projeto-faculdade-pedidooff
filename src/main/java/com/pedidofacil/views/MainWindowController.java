@@ -115,6 +115,24 @@ public class MainWindowController implements Initializable {
         });
 
         cmbPayment.setItems(FXCollections.observableArrayList(PaymentMethod.values()));
+        cmbPayment.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(PaymentMethod method) {
+                if (method == null) return null;
+                return switch (method) {
+                    case CASH -> "Dinheiro";
+                    case PIX -> "PIX";
+                    case DEBIT -> "Débito";
+                    case CREDIT -> "Crédito";
+                    case CREDITSALE -> "Venda a Prazo";
+                };
+            }
+
+            @Override
+            public PaymentMethod fromString(String string) {
+                return null;
+            }
+        });
         cmbPayment.getSelectionModel().select(vm.getPaymentMethod());
 
         // Preencher lista de clientes
@@ -299,7 +317,7 @@ public class MainWindowController implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.setScene(new Scene(loader.load()));
             stage.show();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             lblStatus.setText("Falha ao abrir histórico: " + ex.getMessage());
         }
     }
@@ -314,7 +332,7 @@ public class MainWindowController implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.setScene(new Scene(loader.load()));
             stage.show();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             lblStatus.setText("Falha ao abrir relatórios: " + ex.getMessage());
         }
     }

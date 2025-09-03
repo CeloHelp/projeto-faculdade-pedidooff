@@ -113,7 +113,7 @@ public class ReportsWindowController implements Initializable {
         dpStart.setValue(vm.getStartDate());
         dpEnd.setValue(vm.getEndDate());
 
-        refresh();
+        onToday(); // Set default to today's date
     }
 
     @FXML
@@ -370,9 +370,10 @@ public class ReportsWindowController implements Initializable {
                 prodSeries.getData().add(new XYChart.Data<>(p.getProductName(), p.getTotal().doubleValue()));
             }
             barProducts.getData().setAll(prodSeries);
+            addBarTooltips(barProducts);
 
             var dailySeries = new XYChart.Series<String, Number>();
-            dailySeries.setName("Vendas por Dia");
+            dailySeries.setName("Gráfico de Vendas");
             var points = new LinkedHashMap<String, BigDecimal>();
             for (DailySalesView d : vm.getDailySales()) {
                 if (d == null || d.getDay() == null) continue;
@@ -403,6 +404,7 @@ public class ReportsWindowController implements Initializable {
                 dailySeries.getData().add(new XYChart.Data<>(day, points.get(day).doubleValue()));
             }
             barDaily.getData().setAll(dailySeries);
+            addBarTooltips(barDaily);
 
             tblTicket.setItems(FXCollections.observableArrayList(vm.getTicketAverages()));
             tblTopCustomers.setItems(FXCollections.observableArrayList(vm.getTopCustomers()));
