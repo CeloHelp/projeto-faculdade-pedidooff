@@ -17,6 +17,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -421,5 +422,15 @@ public class ReportsWindowController implements Initializable {
             case CREDIT -> "Crédito";
             case CREDITSALE -> "Crediário";
         };
+    }
+
+    private void addBarTooltips(BarChart<String, Number> chart) {
+        for (XYChart.Series<String, Number> s : chart.getData()) {
+            for (XYChart.Data<String, Number> d : s.getData()) {
+                String text = d.getXValue() + ": " + fmtDec(BigDecimal.valueOf(d.getYValue().doubleValue())) + " R$";
+                Tooltip tp = new Tooltip(text);
+                Tooltip.install(d.getNode(), tp);
+            }
+        }
     }
 }
