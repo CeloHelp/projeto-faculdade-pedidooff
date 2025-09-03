@@ -46,6 +46,13 @@ import java.util.prefs.Preferences;
 public class ReportsWindowController implements Initializable {
 
     private static final String PREF_EXPORT_DIR = "export_dir";
+    private static final Map<PaymentMethod, String> PAYMENT_COLORS = Map.of(
+            PaymentMethod.CASH, "#2ECC71",  // Verde
+            PaymentMethod.PIX, "#3498DB",   // Azul
+            PaymentMethod.DEBIT, "#F1C40F", // Amarelo
+            PaymentMethod.CREDIT, "#E74C3C",// Vermelho
+            PaymentMethod.CREDITSALE, "#9B59B6" // Roxo
+    );
 
     private final ReportsViewModel vm;
     private Path lastExportDir;
@@ -357,11 +364,26 @@ public class ReportsWindowController implements Initializable {
         try {
             vm.refreshAll();
 
-            var pieData = vm.getPaymentDistribution().stream()
+            var paymentDistribution = vm.getPaymentDistribution();
+            var pieData = paymentDistribution.stream()
                     .filter(p -> p != null && p.getPaymentMethod() != null && p.getTotal() != null)
                     .map(p -> new PieChart.Data(pmLabel(p.getPaymentMethod()), p.getTotal().doubleValue()))
                     .toList();
+
             piePayments.setData(FXCollections.observableArrayList(pieData));
+
+            // Aplica as cores com base no método de pagamento original
+            for (PieChart.Data data : piePayments.getData()) {
+                paymentDistribution.stream()
+                        .filter(p -> p != null && p.getPaymentMethod() != null && pmLabel(p.getPaymentMethod()).equals(data.getName()))
+                        .findFirst()
+                        .ifPresent(p -> {
+                            String color = PAYMENT_COLORS.get(p.getPaymentMethod());
+                            if (color != null) {
+                                data.getNode().setStyle("-fx-pie-color: " + color + ";");
+                            }
+                        });
+            }
 
             var prodSeries = new XYChart.Series<String, Number>();
             prodSeries.setName("Top Produtos");
