@@ -56,14 +56,14 @@
             <children>
                 <TitledPane text="Evolução Temporal" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
                     <content>
-                        <LineChart fx:id="lineDaily" title="Vendas por Dia">
+                        <BarChart fx:id="barDaily" title="Vendas por Dia">
                             <xAxis>
                                 <CategoryAxis label="Dia"/>
                             </xAxis>
                             <yAxis>
                                 <NumberAxis label="Total (R$)"/>
                             </yAxis>
-                        </LineChart>
+                        </BarChart>
                     </content>
                 </TitledPane>
                 <TitledPane text="Top Produtos" expanded="true" GridPane.columnIndex="1" GridPane.rowIndex="0">

@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 @Component
@@ -45,6 +47,18 @@ public class HistoryWindowController implements Initializable {
         colPayment.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(String.valueOf(c.getValue().getPaymentMethod())));
         colCustomer.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getCustomer() != null ? c.getValue().getCustomer().getName() : ""));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
+        // Formatação monetária pt-BR com " R$"
+        NumberFormat currency = NumberFormat.getNumberInstance(new Locale("pt", "BR"));
+        colTotal.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(BigDecimal item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("");
+                } else {
+                    setText(currency.format(item) + " R$");
+                }
+            }
+        });
     }
 
     @FXML

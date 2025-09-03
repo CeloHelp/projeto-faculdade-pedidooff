@@ -11,12 +11,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.PieChart;
-import javafx.scene.chart.XYChart;
-import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.*;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableCell;
@@ -43,11 +38,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 @Component
@@ -63,7 +54,7 @@ public class ReportsWindowController implements Initializable {
     @FXML private DatePicker dpEnd;
     @FXML private PieChart piePayments;
     @FXML private BarChart<String, Number> barProducts;
-    @FXML private LineChart<String, Number> lineDaily;
+    @FXML private BarChart<String, Number> barDaily;
 
     @FXML private TableView<TicketAverageView> tblTicket;
     @FXML private TableColumn<TicketAverageView, String> colPayMethod;
@@ -101,13 +92,6 @@ public class ReportsWindowController implements Initializable {
             }
         });
 
-        // Configurações visuais para destacar o gráfico diário
-        lineDaily.setCreateSymbols(false);
-        lineDaily.setAnimated(false);
-        if (lineDaily.getXAxis() instanceof CategoryAxis cx) {
-            cx.setTickLabelRotation(45);
-        }
-
         // Formatação dos eixos (R$) nos gráficos
         if (barProducts.getYAxis() instanceof NumberAxis by) {
             by.setTickLabelFormatter(new StringConverter<>() {
@@ -115,11 +99,14 @@ public class ReportsWindowController implements Initializable {
                 @Override public Number fromString(String string) { return 0; }
             });
         }
-        if (lineDaily.getYAxis() instanceof NumberAxis ly) {
+        if (barDaily.getYAxis() instanceof NumberAxis ly) {
             ly.setTickLabelFormatter(new StringConverter<>() {
                 @Override public String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValue())) + " R$"; }
                 @Override public Number fromString(String string) { return 0; }
             });
+        }
+        if (barDaily.getXAxis() instanceof CategoryAxis cx) {
+            cx.setTickLabelRotation(45);
         }
 
         dpStart.setValue(vm.getStartDate());
@@ -160,7 +147,7 @@ public class ReportsWindowController implements Initializable {
 
     @FXML
     public void onThisMonth() {
-        YearMonth ym = YearMonth.now();
+        var ym = java.time.YearMonth.now();
         dpStart.setValue(ym.atDay(1));
         dpEnd.setValue(ym.atEndOfMonth());
         onRefresh();
@@ -168,7 +155,7 @@ public class ReportsWindowController implements Initializable {
 
     @FXML
     public void onLastMonth() {
-        YearMonth ym = YearMonth.now().minusMonths(1);
+        var ym = java.time.YearMonth.now().minusMonths(1);
         dpStart.setValue(ym.atDay(1));
         dpEnd.setValue(ym.atEndOfMonth());
         onRefresh();
@@ -189,7 +176,7 @@ public class ReportsWindowController implements Initializable {
         vm.refreshAll();
 
         Path base = getExportBaseDir();
-        String stamp = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").format(LocalDateTime.now());
+        String stamp = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").format(LocalDateTime.now());
         Path dir = base.resolve("reports_" + stamp);
         try {
             Files.createDirectories(dir);
@@ -341,8 +328,8 @@ public class ReportsWindowController implements Initializable {
         if (configured != null && !configured.isBlank()) {
             base = Paths.get(configured);
         } else {
-                String userHome = System.getProperty("user.home");
-                base = Paths.get(userHome, "PedidoFacil", "exports");
+            String userHome = System.getProperty("user.home");
+            base = Paths.get(userHome, "PedidoFacil", "exports");
         }
         try {
             Files.createDirectories(base);
@@ -353,10 +340,10 @@ public class ReportsWindowController implements Initializable {
 
     private String fmtDec(BigDecimal v) {
         if (v == null) return "";
-        DecimalFormatSymbols sy = new DecimalFormatSymbols(new Locale("pt", "BR"));
+        var sy = new DecimalFormatSymbols(new java.util.Locale("pt", "BR"));
         sy.setDecimalSeparator(',');
         sy.setGroupingSeparator('.');
-        DecimalFormat df = new DecimalFormat("#0.00", sy);
+        var df = new DecimalFormat("#0.00", sy);
         df.setGroupingUsed(false);
         return df.format(v);
     }
@@ -383,81 +370,45 @@ public class ReportsWindowController implements Initializable {
             }
             barProducts.getData().setAll(prodSeries);
 
-            var lineSeries = new XYChart.Series<String, Number>();
-            lineSeries.setName("Vendas por Dia");
-            // Preenche datas faltantes com 0 para visual contínua
-            var points = new java.util.LinkedHashMap<String, BigDecimal>();
+            var dailySeries = new XYChart.Series<String, Number>();
+            dailySeries.setName("Vendas por Dia");
+            var points = new LinkedHashMap<String, BigDecimal>();
             for (DailySalesView d : vm.getDailySales()) {
                 if (d == null || d.getDay() == null) continue;
                 points.put(d.getDay(), d.getTotal() == null ? BigDecimal.ZERO : d.getTotal());
             }
-            // Determina intervalo (usa filtro selecionado; se vazio, usa min/max retornado)
-            java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            java.time.LocalDate s = vm.getStartDate();
-            java.time.LocalDate e = vm.getEndDate();
+            var df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate s = vm.getStartDate();
+            LocalDate e = vm.getEndDate();
             if (s == null || e == null) {
-                java.util.Optional<java.time.LocalDate> min = points.keySet().stream().map(k -> java.time.LocalDate.parse(k, df)).min(java.time.LocalDate::compareTo);
-                java.util.Optional<java.time.LocalDate> max = points.keySet().stream().map(k -> java.time.LocalDate.parse(k, df)).max(java.time.LocalDate::compareTo);
+                var min = points.keySet().stream().map(k -> LocalDate.parse(k, df)).min(LocalDate::compareTo);
+                var max = points.keySet().stream().map(k -> LocalDate.parse(k, df)).max(LocalDate::compareTo);
                 if (min.isPresent() && max.isPresent()) {
                     s = min.get();
                     e = max.get();
                 }
             }
-            // Preenche dias faltantes com 0 dentro do intervalo
             if (s != null && e != null && !e.isBefore(s)) {
-                java.time.LocalDate cur = s;
+                var cur = s;
                 while (!cur.isAfter(e)) {
                     String key = cur.format(df);
                     points.putIfAbsent(key, BigDecimal.ZERO);
                     cur = cur.plusDays(1);
                 }
             }
-
-            // Ordenar por data yyyy-MM-dd
-            java.util.List<String> ordered = new java.util.ArrayList<>(points.keySet());
-            ordered.sort(java.util.Comparator.naturalOrder());
-
-            double minVal = Double.POSITIVE_INFINITY;
-            double maxVal = Double.NEGATIVE_INFINITY;
+            var ordered = new ArrayList<>(points.keySet());
+            ordered.sort(Comparator.naturalOrder());
             for (String day : ordered) {
-                double v = points.get(day).doubleValue();
-                minVal = Math.min(minVal, v);
-                maxVal = Math.max(maxVal, v);
-                lineSeries.getData().add(new XYChart.Data<>(day, v));
+                dailySeries.getData().add(new XYChart.Data<>(day, points.get(day).doubleValue()));
             }
-            lineDaily.getData().setAll(lineSeries);
-
-            // Ajustar escala do eixo Y para evidenciar variações pequenas
-            if (lineDaily.getYAxis() instanceof NumberAxis ly) {
-                if (Double.isInfinite(minVal) || Double.isInfinite(maxVal)) {
-                    ly.setAutoRanging(true);
-                } else {
-                    double range = maxVal - minVal;
-                    if (range == 0) {
-                        // quando todos os valores são iguais, cria uma margem para visualizar
-                        double pad = (maxVal == 0) ? 1.0 : Math.max(Math.abs(maxVal) * 0.05, 1.0);
-                        ly.setLowerBound(Math.max(0, minVal - pad));
-                        ly.setUpperBound(maxVal + pad);
-                        ly.setTickUnit((ly.getUpperBound() - ly.getLowerBound()) / 5.0);
-                        ly.setAutoRanging(false);
-                    } else {
-                        double pad = Math.max(range * 0.1, 1.0);
-                        double lower = Math.max(0, minVal - pad);
-                        double upper = maxVal + pad;
-                        ly.setLowerBound(lower);
-                        ly.setUpperBound(upper);
-                        ly.setTickUnit((upper - lower) / 5.0);
-                        ly.setAutoRanging(false);
-                    }
-                }
-            }
+            barDaily.getData().setAll(dailySeries);
 
             tblTicket.setItems(FXCollections.observableArrayList(vm.getTicketAverages()));
             tblTopCustomers.setItems(FXCollections.observableArrayList(vm.getTopCustomers()));
         } catch (Exception ex) {
             piePayments.setData(FXCollections.observableArrayList());
             barProducts.getData().clear();
-            lineDaily.getData().clear();
+            barDaily.getData().clear();
         }
     }
 
