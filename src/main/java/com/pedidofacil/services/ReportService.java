@@ -53,9 +53,4 @@ public class ReportService implements IReportService {
     public List<DailySalesView> dailySales(LocalDate start, LocalDate end) {
         return orderRepository.dailySales(startOf(start), endOf(end));
     }
-
-    @Override
-    public List<DailySalesView> dailySales(LocalDate start, LocalDate end) {
-        return orderRepository.dailySales(startOf(start), endOf(end));
-    }
 }
