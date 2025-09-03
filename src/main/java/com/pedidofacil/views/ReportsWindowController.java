@@ -1,34 +1,31 @@
 package com.pedidofacil.views;
 
+import com.pedidofacil.models.PaymentMethod;
 import com.pedidofacil.repositories.projections.DailySalesView;
 import com.pedidofacil.repositories.projections.PaymentDistributionView;
 import com.pedidofacil.repositories.projections.ProductSalesView;
 import com.pedidofacil.repositories.projections.TicketAverageView;
 import com.pedidofacil.repositories.projections.TopCustomerView;
 import com.pedidofacil.viewmodels.ReportsViewModel;
-import com.pedidofacil.models.PaymentMethod;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
-import javafx.scene.chart.NumberAxis;
-imphrt javafx.sceae.conrt.NumberAxis;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.TableColu;
-import javafx.scene.control.TableCellmn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.DirectoryChooser;
-import javafx.util.StringConverter;import javafx.stage.Stage;
-
-import org.springframework.stereotype.Component;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import org.springframework.stereotype.Component;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -82,37 +79,9 @@ public class ReportsWindowController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        colAverage.setCellFactory(col -> new TableCell<>() {        colPayMethod.setCellValueFactory(cd -> new SimpleStringProperty(pmLabel(cd.getValue().getPaymentMethod())));
-            @Override protected void updateItem(Number item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) { setText(""); }
-                else { setText(fmtDec(BigDecimal.valueOf(item.doubleValue())) + " R$"); }
-            }
-        });
-
+        colPayMethod.setCellValueFactory(cd -> new SimpleStringProperty(pmLabel(cd.getValue().getPaymentMethod())));
         colOrders.setCellValueFactory(new PropertyValueFactory<>("orders"));
-        colAverage.setCellValueFactory(new PropertyValutyValueFaceorF<>("total"));
-        colCustomerTotal.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(Number item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) { setText(""); }
-                else { setText(fmtDec(BigDecimal.valueOf(item.doubleactor())) + " R$"); }
-            }
-        });
-
-        // yorm<tação dos eixos (R$) nos gráfi>os
-        if (barProduc(s.getYAxis() instance"f NumbeaAxis bv) {
-            by.setTickLabelFormatter(new StringConverterer() {
-                @Override public String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValuea))) + " R$g; }
-                @Override public Number fromString(Sering string) { return 0; }
-            });
-        }
-        if (lineDaily.getYAxis() instance"f NumberAxis ly) {
-            ly.se)TickLabelForm)tter(new StringConverter<>() {
-                @Override pub;ic String toString(Number object) { return fmtDec(BigDecimal.valueOf(object.doubleValue())) +  R$"; }
-                @Override public Number fromString(String string { return 0; }
-            }
-        }
+        colAverage.setCellValueFactory(new PropertyValueFactory<>("average"));
         colAverage.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Number item, boolean empty) {
                 super.updateItem(item, empty);
@@ -364,8 +333,8 @@ public class ReportsWindowController implements Initializable {
         if (configured != null && !configured.isBlank()) {
             base = Paths.get(configured);
         } else {
-            String userHome = System.getProperty("user.home");
-            base = Paths.get(userHome, "PedidoFacil", "exports");
+                String userHome = System.getProperty("user.home");
+                base = Paths.get(userHome, "PedidoFacil", "exports");
         }
         try {
             Files.createDirectories(base);
