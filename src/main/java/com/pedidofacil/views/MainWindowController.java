@@ -61,6 +61,11 @@ public class MainWindowController implements Initializable {
     // Substitui TextField por ComboBox de clientes
     @FXML private ComboBox<Customer> cmbCustomer;
     @FXML private Button btnNewCustomer;
+    @FXML private Button btnFinalize;
+    @FXML private Button btnPrint;
+    @FXML private Button btnNewOrder;
+    @FXML private Button btnHistory;
+    @FXML private Button btnReports;
     @FXML private Label lblTotal;
     @FXML private Label lblStatus;
 
@@ -296,6 +301,21 @@ public class MainWindowController implements Initializable {
             stage.show();
         } catch (IOException ex) {
             lblStatus.setText("Falha ao abrir histórico: " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    public void onOpenReports(ActionEvent e) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ReportsWindow.fxml"));
+            loader.setControllerFactory(context::getBean);
+            Stage stage = new Stage();
+            stage.setTitle("Relatórios");
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setScene(new Scene(loader.load()));
+            stage.show();
+        } catch (IOException ex) {
+            lblStatus.setText("Falha ao abrir relatórios: " + ex.getMessage());
         }
     }
 

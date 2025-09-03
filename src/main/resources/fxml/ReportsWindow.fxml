@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pedidofacil.views.ReportsWindowController" prefWidth="1100" prefHeight="700">
+    <top>
+        <VBox>
+            <children>
+                <HBox spacing="10">
+                    <padding>
+                        <Insets topRightBottomLeft="10"/>
+                    </padding>
+                    <children>
+                        <Label text="Início:"/>
+                        <DatePicker fx:id="dpStart"/>
+                        <Label text="Fim:"/>
+                        <DatePicker fx:id="dpEnd"/>
+                        <Button text="Atualizar" onAction="#onRefresh"/>
+                        <Button text="Exportar CSV" onAction="#onExport"/>
+                        <Button text="Abrir Pasta" onAction="#onOpenFolder"/>
+                        <Button text="Pasta de Exportação..." onAction="#onChooseExportFolder"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Fechar" onAction="#onClose"/>
+                    </children>
+                </HBox>
+                <HBox spacing="6">
+                    <padding>
+                        <Insets topRightBottomLeft="10"/>
+                    </padding>
+                    <children>
+                        <Label text="Períodos rápidos:"/>
+                        <Button text="Hoje" onAction="#onToday"/>
+                        <Button text="Últimos 7 dias" onAction="#onLast7"/>
+                        <Button text="Este mês" onAction="#onThisMonth"/>
+                        <Button text="Mês passado" onAction="#onLastMonth"/>
+                        <Button text="Limpar" onAction="#onClearPeriod"/>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <GridPane hgap="10" vgap="10">
+            <padding>
+                <Insets topRightBottomLeft="10"/>
+            </padding>
+            <columnConstraints>
+                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="65.0" vgrow="ALWAYS"/>
+                <RowConstraints percentHeight="35.0" vgrow="ALWAYS"/>
+            </rowConstraints>
+            <children>
+                <TitledPane text="Evolução Temporal" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <content>
+                        <BarChart fx:id="barDaily" title="Vendas por Dia">
+                            <xAxis>
+                                <CategoryAxis label="Dia"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Total (R$)"/>
+                            </yAxis>
+                        </BarChart>
+                    </content>
+                </TitledPane>
+                <TitledPane text="Top Produtos" expanded="true" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <content>
+                        <BarChart fx:id="barProducts" title="Vendas por Produto">
+                            <xAxis>
+                                <CategoryAxis label="Produto"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Total (R$)"/>
+                            </yAxis>
+                        </BarChart>
+                    </content>
+                </TitledPane>
+                <TitledPane text="Distribuição de Pagamentos" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                    <content>
+                        <PieChart fx:id="piePayments"/>
+                    </content>
+                </TitledPane>
+                <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                    <children>
+                        <TitledPane text="Ticket Médio por Pagamento" expanded="false">
+                            <content>
+                                <TableView fx:id="tblTicket">
+                                    <columns>
+                                        <TableColumn fx:id="colPayMethod" text="Pagamento"/>
+                                        <TableColumn fx:id="colOrders" text="Pedidos"/>
+                                        <TableColumn fx:id="colAverage" text="Ticket Médio"/>
+                                    </columns>
+                                </TableView>
+                            </content>
+                        </TitledPane>
+                        <TitledPane text="Top Clientes" expanded="false">
+                            <content>
+                                <TableView fx:id="tblTopCustomers">
+                                    <columns>
+                                        <TableColumn fx:id="colCustomer" text="Cliente"/>
+                                        <TableColumn fx:id="colCustomerTotal" text="Total"/>
+                                    </columns>
+                                </TableView>
+                            </content>
+                        </TitledPane>
+                    </children>
+                </VBox>
+            </children>
+        </GridPane>
+    </center>
+</BorderPane>
