@@ -50,13 +50,20 @@
                 <ColumnConstraints percentWidth="50.0" hgrow="ALWAYS"/>
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints percentHeight="55.0" vgrow="ALWAYS"/>
-                <RowConstraints percentHeight="45.0" vgrow="ALWAYS"/>
+                <RowConstraints percentHeight="65.0" vgrow="ALWAYS"/>
+                <RowConstraints percentHeight="35.0" vgrow="ALWAYS"/>
             </rowConstraints>
             <children>
-                <TitledPane text="Distribuição de Pagamentos" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <TitledPane text="Evolução Temporal" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="0">
                     <content>
-                        <PieChart fx:id="piePayments"/>
+                        <LineChart fx:id="lineDaily" title="Vendas por Dia">
+                            <xAxis>
+                                <CategoryAxis label="Dia"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Total (R$)"/>
+                            </yAxis>
+                        </LineChart>
                     </content>
                 </TitledPane>
                 <TitledPane text="Top Produtos" expanded="true" GridPane.columnIndex="1" GridPane.rowIndex="0">
@@ -71,16 +78,9 @@
                         </BarChart>
                     </content>
                 </TitledPane>
-                <TitledPane text="Evolução Temporal" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                <TitledPane text="Distribuição de Pagamentos" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="1">
                     <content>
-                        <LineChart fx:id="lineDaily" title="Vendas por Dia">
-                            <xAxis>
-                                <CategoryAxis label="Dia"/>
-                            </xAxis>
-                            <yAxis>
-                                <NumberAxis label="Total (R$)"/>
-                            </yAxis>
-                        </LineChart>
+                        <PieChart fx:id="piePayments"/>
                     </content>
                 </TitledPane>
                 <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">

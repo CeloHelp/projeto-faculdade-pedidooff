@@ -376,10 +376,30 @@ public class ReportsWindowController implements Initializable {
             barProducts.getData().setAll(prodSeries);
 
             var lineSeries = new XYChart.Series<String, Number>();
-            lineSeries.setName("Vendas");
+            lineSeries.setName("Vendas por Dia");
+            // Preenche datas faltantes com 0 para visual contínua
+            var points = new java.util.LinkedHashMap<String, BigDecimal>();
             for (DailySalesView d : vm.getDailySales()) {
-                if (d == null || d.getDay() == null || d.getTotal() == null) continue;
-                lineSeries.getData().add(new XYChart.Data<>(d.getDay(), d.getTotal().doubleValue()));
+                if (d == null || d.getDay() == null) continue;
+                points.put(d.getDay(), d.getTotal() == null ? BigDecimal.ZERO : d.getTotal());
+            }
+            // Se start e end estão definidos, preenche dias faltantes com 0
+            java.time.LocalDate s = vm.getStartDate();
+            java.time.LocalDate e = vm.getEndDate();
+            if (s != null && e != null && !e.isBefore(s)) {
+                java.time.format.DateTimeFormatter df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                java.time.LocalDate cur = s;
+                while (!cur.isAfter(e)) {
+                    String key = cur.format(df);
+                    points.putIfAbsent(key, BigDecimal.ZERO);
+                    cur = cur.plusDays(1);
+                }
+            }
+            // Ordenar por data yyyy-MM-dd
+            java.util.List<String> ordered = new java.util.ArrayList<>(points.keySet());
+            ordered.sort(java.util.Comparator.naturalOrder());
+            for (String day : ordered) {
+                lineSeries.getData().add(new XYChart.Data<>(day, points.get(day).doubleValue()));
             }
             lineDaily.getData().setAll(lineSeries);
 
