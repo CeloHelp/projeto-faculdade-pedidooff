@@ -412,13 +412,45 @@ public class ReportsWindowController implements Initializable {
                     cur = cur.plusDays(1);
                 }
             }
+
             // Ordenar por data yyyy-MM-dd
             java.util.List<String> ordered = new java.util.ArrayList<>(points.keySet());
             ordered.sort(java.util.Comparator.naturalOrder());
+
+            double minVal = Double.POSITIVE_INFINITY;
+            double maxVal = Double.NEGATIVE_INFINITY;
             for (String day : ordered) {
-                lineSeries.getData().add(new XYChart.Data<>(day, points.get(day).doubleValue()));
+                double v = points.get(day).doubleValue();
+                minVal = Math.min(minVal, v);
+                maxVal = Math.max(maxVal, v);
+                lineSeries.getData().add(new XYChart.Data<>(day, v));
             }
             lineDaily.getData().setAll(lineSeries);
+
+            // Ajustar escala do eixo Y para evidenciar variações pequenas
+            if (lineDaily.getYAxis() instanceof NumberAxis ly) {
+                if (Double.isInfinite(minVal) || Double.isInfinite(maxVal)) {
+                    ly.setAutoRanging(true);
+                } else {
+                    double range = maxVal - minVal;
+                    if (range == 0) {
+                        // quando todos os valores são iguais, cria uma margem para visualizar
+                        double pad = (maxVal == 0) ? 1.0 : Math.max(Math.abs(maxVal) * 0.05, 1.0);
+                        ly.setLowerBound(Math.max(0, minVal - pad));
+                        ly.setUpperBound(maxVal + pad);
+                        ly.setTickUnit((ly.getUpperBound() - ly.getLowerBound()) / 5.0);
+                        ly.setAutoRanging(false);
+                    } else {
+                        double pad = Math.max(range * 0.1, 1.0);
+                        double lower = Math.max(0, minVal - pad);
+                        double upper = maxVal + pad;
+                        ly.setLowerBound(lower);
+                        ly.setUpperBound(upper);
+                        ly.setTickUnit((upper - lower) / 5.0);
+                        ly.setAutoRanging(false);
+                    }
+                }
+            }
 
             tblTicket.setItems(FXCollections.observableArrayList(vm.getTicketAverages()));
             tblTopCustomers.setItems(FXCollections.observableArrayList(vm.getTopCustomers()));

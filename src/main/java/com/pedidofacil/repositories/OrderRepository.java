@@ -49,7 +49,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             Pageable pageable
     );
 
-    @Query("select function('date', o.createdAt) as day, sum(o.total) as total from Order o where (:start is null or o.createdAt >= :start) and (:end is null or o.createdAt <= :end) group by function('date', o.createdAt) order by day")
+    @Query("select function('strftime','%Y-%m-%d', o.createdAt) as day, sum(o.total) as total from Order o where (:start is null or o.createdAt >= :start) and (:end is null or o.createdAt <= :end) group by function('strftime','%Y-%m-%d', o.createdAt) order by day")
     List<DailySalesView> dailySales(
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
