@@ -62,9 +62,11 @@ public class ReportService implements IReportService {
 
     @Override
     public List<DailySalesView> dailySales(LocalDate start, LocalDate end) {
+        log.info("Buscando vendas diárias de {} até {}", start, end);
         try {
             // Tenta primeiro a query nativa
             List<DailySalesView> nativeResult = orderRepository.dailySales(startOf(start), endOf(end));
+            log.info("Query nativa retornou {} resultados", nativeResult.size());
             if (!nativeResult.isEmpty()) {
                 log.debug("Usando resultado da query nativa para vendas diárias");
                 return nativeResult;
@@ -75,6 +77,7 @@ public class ReportService implements IReportService {
 
         // Fallback: processa manualmente os pedidos
         List<Order> orders = orderRepository.findOrdersInPeriod(startOf(start), endOf(end));
+        log.info("Fallback encontrou {} pedidos no período", orders.size());
         
         if (orders.isEmpty()) {
             log.info("Nenhum pedido encontrado no período");
