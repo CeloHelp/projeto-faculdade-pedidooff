@@ -39,6 +39,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.prefs.Preferences;
 
@@ -47,11 +48,11 @@ public class ReportsWindowController implements Initializable {
 
     private static final String PREF_EXPORT_DIR = "export_dir";
     private static final Map<PaymentMethod, String> PAYMENT_COLORS = Map.of(
-            PaymentMethod.CASH, "#2ECC71",  // Verde
-            PaymentMethod.PIX, "#3498DB",   // Azul
-            PaymentMethod.DEBIT, "#F1C40F", // Amarelo
-            PaymentMethod.CREDIT, "#E74C3C",// Vermelho
-            PaymentMethod.CREDITSALE, "#9B59B6" // Roxo
+            PaymentMethod.CASH, "#F26522", // Orange
+            PaymentMethod.CREDIT, "#F4B400", // Yellow
+            PaymentMethod.DEBIT, "#4285F4",  // Blue
+            PaymentMethod.PIX, "#34A853",      // Green
+            PaymentMethod.CREDITSALE, "#EA4335" // Red
     );
 
     private final ReportsViewModel vm;
@@ -379,7 +380,7 @@ public class ReportsWindowController implements Initializable {
                         .findFirst()
                         .ifPresent(p -> {
                             String color = PAYMENT_COLORS.get(p.getPaymentMethod());
-                            if (color != null) {
+                    if (color != null) {
                                 data.getNode().setStyle("-fx-pie-color: " + color + ";");
                             }
                         });
@@ -401,41 +402,48 @@ public class ReportsWindowController implements Initializable {
                 if (d == null || d.getDay() == null) continue;
                 points.put(d.getDay(), d.getTotal() == null ? BigDecimal.ZERO : d.getTotal());
             }
+
             var df = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate s = vm.getStartDate();
             LocalDate e = vm.getEndDate();
-            if (s == null || e == null) {
-                var min = points.keySet().stream().map(k -> LocalDate.parse(k, df)).min(LocalDate::compareTo);
-                var max = points.keySet().stream().map(k -> LocalDate.parse(k, df)).max(LocalDate::compareTo);
-                if (min.isPresent() && max.isPresent()) {
-                    s = min.get();
-                    e = max.get();
+
+            if (s != null && e != null) {
+                for (LocalDate d = s; !d.isAfter(e); d = d.plusDays(1)) {
+                    String dayStr = d.format(df);
+                    points.putIfAbsent(dayStr, BigDecimal.ZERO);
                 }
             }
-            if (s != null && e != null && !e.isBefore(s)) {
-                var cur = s;
-                while (!cur.isAfter(e)) {
-                    String key = cur.format(df);
-                    points.putIfAbsent(key, BigDecimal.ZERO);
-                    cur = cur.plusDays(1);
-                }
-            }
-            var ordered = new ArrayList<>(points.keySet());
-            ordered.sort(Comparator.naturalOrder());
-            for (String day : ordered) {
-                dailySeries.getData().add(new XYChart.Data<>(day, points.get(day).doubleValue()));
-            }
+
+            points.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> dailySeries.getData().add(new XYChart.Data<>(formatDateLabel(entry.getKey()), entry.getValue().doubleValue())));
+
             barDaily.getData().setAll(dailySeries);
+            barDaily.setTitle("Vendas por Dia");
             addBarTooltips(barDaily);
 
             tblTicket.setItems(FXCollections.observableArrayList(vm.getTicketAverages()));
             tblTopCustomers.setItems(FXCollections.observableArrayList(vm.getTopCustomers()));
         } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Erro ao atualizar relatórios: " + ex.getMessage());
+            
             piePayments.setData(FXCollections.observableArrayList());
             barProducts.getData().clear();
             barDaily.getData().clear();
+            barDaily.setTitle("Erro ao carregar dados");
         }
     }
+    // Método auxiliar para formatar labels de data
+    private String formatDateLabel(String date) {
+        try {
+            LocalDate ld = LocalDate.parse(date);
+            return ld.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        } catch (Exception e) {
+            return date;
+        }
+    }
+
 
     private String pmLabel(PaymentMethod m) {
         if (m == null) return "";

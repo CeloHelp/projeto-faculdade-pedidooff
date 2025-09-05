@@ -80,7 +80,7 @@
                 </TitledPane>
                 <TitledPane text="Distribuição de Pagamentos" expanded="true" GridPane.columnIndex="0" GridPane.rowIndex="1">
                     <content>
-                        <PieChart fx:id="piePayments"/>
+                        <PieChart fx:id="piePayments" legendVisible="false"/>
                     </content>
                 </TitledPane>
                 <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">

@@ -1,6 +1,7 @@
 package com.pedidofacil.services;
 
 import com.pedidofacil.models.Customer;
+import com.pedidofacil.models.Order;
 import com.pedidofacil.models.PaymentMethod;
 import com.pedidofacil.repositories.OrderRepository;
 import com.pedidofacil.repositories.projections.DailySalesView;
@@ -8,29 +9,39 @@ import com.pedidofacil.repositories.projections.PaymentDistributionView;
 import com.pedidofacil.repositories.projections.ProductSalesView;
 import com.pedidofacil.repositories.projections.TicketAverageView;
 import com.pedidofacil.repositories.projections.TopCustomerView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportService implements IReportService {
 
+    private static final Logger log = LoggerFactory.getLogger(ReportService.class);
     private final OrderRepository orderRepository;
 
     public ReportService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 
-    private LocalDateTime startOf(LocalDate d) { return d == null ? null : d.atStartOfDay(); }
-    private LocalDateTime endOf(LocalDate d) { return d == null ? null : d.atTime(LocalTime.MAX); }
+    private LocalDateTime startOf(LocalDate d) {
+        return d == null ? null : d.atStartOfDay();
+    }
+    
+    private LocalDateTime endOf(LocalDate d) {
+        return d == null ? null : d.atTime(LocalTime.MAX);
+    }
 
     @Override
     public List<ProductSalesView> topProducts(LocalDate start, LocalDate end, int limit) {
-        // Using native SQL via repository; fallback later if not implemented
         return orderRepository.productSales(startOf(start), endOf(end), PageRequest.of(0, limit));
     }
 
@@ -51,6 +62,68 @@ public class ReportService implements IReportService {
 
     @Override
     public List<DailySalesView> dailySales(LocalDate start, LocalDate end) {
-        return orderRepository.dailySales(startOf(start), endOf(end));
+        try {
+            // Tenta primeiro a query nativa
+            List<DailySalesView> nativeResult = orderRepository.dailySales(startOf(start), endOf(end));
+            if (!nativeResult.isEmpty()) {
+                log.debug("Usando resultado da query nativa para vendas diárias");
+                return nativeResult;
+            }
+        } catch (Exception e) {
+            log.warn("Query nativa falhou, usando processamento manual: {}", e.getMessage());
+        }
+
+        // Fallback: processa manualmente os pedidos
+        List<Order> orders = orderRepository.findOrdersInPeriod(startOf(start), endOf(end));
+        
+        if (orders.isEmpty()) {
+            log.info("Nenhum pedido encontrado no período");
+            return Collections.emptyList();
+        }
+
+        // Agrupa por data
+        Map<LocalDate, BigDecimal> salesByDay = new TreeMap<>();
+        
+        for (Order order : orders) {
+            if (order.getCreatedAt() != null && order.getTotal() != null) {
+                LocalDate day = order.getCreatedAt().toLocalDate();
+                salesByDay.merge(day, order.getTotal(), BigDecimal::add);
+            }
+        }
+
+        // Converte para o formato esperado
+        List<DailySalesView> result = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+        
+        for (Map.Entry<LocalDate, BigDecimal> entry : salesByDay.entrySet()) {
+            result.add(new DailySalesViewImpl(
+                entry.getKey().format(formatter),
+                entry.getValue()
+            ));
+        }
+
+        log.info("Processamento manual retornou {} dias de vendas", result.size());
+        return result;
+    }
+
+    // Implementação interna da interface DailySalesView
+    private static class DailySalesViewImpl implements DailySalesView {
+        private final String day;
+        private final BigDecimal total;
+
+        public DailySalesViewImpl(String day, BigDecimal total) {
+            this.day = day;
+            this.total = total;
+        }
+
+        @Override
+        public String getDay() {
+            return day;
+        }
+
+        @Override
+        public BigDecimal getTotal() {
+            return total;
+        }
     }
 }
