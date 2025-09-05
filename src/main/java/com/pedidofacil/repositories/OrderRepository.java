@@ -50,10 +50,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     // Query nativa para compatibilidade com diferentes bancos de dados
-    @Query(value = "SELECT DATE(o.created_at) as day, SUM(o.total) as total " +
+    @Query(value = "SELECT CAST(o.created_at AS DATE) as day, SUM(o.total) as total " +
            "FROM orders o " +
            "WHERE (:start IS NULL OR o.created_at >= :start) AND (:end IS NULL OR o.created_at <= :end) " +
-           "GROUP BY DATE(o.created_at) " +
+           "GROUP BY CAST(o.created_at AS DATE) " +
            "ORDER BY day", nativeQuery = true)
     List<DailySalesView> dailySales(
             @Param("start") LocalDateTime start,
