@@ -160,6 +160,23 @@ public class MainViewModel {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public BigDecimal getSubtotal() {
+        return items.stream()
+                .map(OrderItemView::getSubtotal)
+                .filter(v -> v != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getDiscount() {
+        // Implemente a lógica de desconto aqui, se houver
+        return BigDecimal.ZERO;
+    }
+
+    public BigDecimal getGrandTotal() {
+        // Implemente a lógica de total geral (subtotal - desconto) aqui
+        return getSubtotal().subtract(getDiscount());
+    }
+
     // Getters/Setters para binding
     public List<Product> getProducts() { return products; }
     public void setProducts(List<Product> products) { this.products = products; }
@@ -182,7 +199,9 @@ public class MainViewModel {
     public void setCustomerName(String customerName) { this.customerName = customerName; }
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
-    public String getStatusMessage() { return statusMessage; }
+    public String getStatusMessage() {
+        return statusMessage != null ? statusMessage : "";
+    }
 
     public void setStatusMessage(String statusMessage) { this.statusMessage = statusMessage; }
 

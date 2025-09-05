@@ -5,7 +5,10 @@ import com.pedidofacil.models.Order;
 import com.pedidofacil.models.PaymentMethod;
 import com.pedidofacil.viewmodels.HistoryViewModel;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
+import javafx.application.Platform;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +28,16 @@ import static org.mockito.Mockito.*;
 class HistoryWindowControllerTest {
 
     @Mock
+    @Mock
     private HistoryViewModel mockViewModel;
+    @Mock
+    private DatePicker dpStart;
+    @Mock
+    private DatePicker dpEnd;
+    @Mock
+    private TableView<Order> tblOrders;
+    @Mock
+    private Label lblStatus;
 
     private HistoryWindowController controller;
 
@@ -33,12 +45,22 @@ class HistoryWindowControllerTest {
     private Order testOrder2;
     private Customer testCustomer;
 
+    @BeforeAll
+    static void initJFX() {
+        Platform.startup(() -> {});
+        Platform.setImplicitExit(false);
+    }
+
     @BeforeEach
     void setUp() {
         controller = new HistoryWindowController(mockViewModel);
-        
+        setPrivateField(controller, "dpStart", dpStart);
+        setPrivateField(controller, "dpEnd", dpEnd);
+        setPrivateField(controller, "tblOrders", tblOrders);
+        setPrivateField(controller, "lblStatus", lblStatus);
+
         testCustomer = new Customer("Cliente Teste", "123456789");
-        
+
         testOrder1 = new Order();
         testOrder1.setNumber(1L);
         testOrder1.setCreatedAt(LocalDateTime.of(2023, 1, 15, 10, 0));
@@ -63,14 +85,9 @@ class HistoryWindowControllerTest {
     @Test
     void onSearch_withValidDates_callsViewModelSearch() {
         // Arrange
-        DatePicker dpStart = new DatePicker(LocalDate.of(2023, 1, 1));
-        DatePicker dpEnd = new DatePicker(LocalDate.of(2023, 1, 31));
-        TableView<Order> tblOrders = new TableView<>();
-        
-        setPrivateField(controller, "dpStart", dpStart);
-        setPrivateField(controller, "dpEnd", dpEnd);
-        setPrivateField(controller, "tblOrders", tblOrders);
-        
+        when(dpStart.getValue()).thenReturn(LocalDate.of(2023, 1, 1));
+        when(dpEnd.getValue()).thenReturn(LocalDate.of(2023, 1, 31));
+
         List<Order> orders = Arrays.asList(testOrder1, testOrder2);
         when(mockViewModel.getOrders()).thenReturn(orders);
         when(mockViewModel.getStatus()).thenReturn("Encontrados: 2");
@@ -84,19 +101,16 @@ class HistoryWindowControllerTest {
         verify(mockViewModel, times(1)).search();
         verify(mockViewModel, times(1)).getOrders();
         verify(mockViewModel, times(1)).getStatus();
+        verify(tblOrders, times(1)).setItems(FXCollections.observableArrayList(orders));
+        verify(lblStatus, times(1)).setText("Encontrados: 2");
     }
 
     @Test
     void onSearch_withNullDates_callsViewModelSearch() {
         // Arrange
-        DatePicker dpStart = new DatePicker();
-        DatePicker dpEnd = new DatePicker();
-        TableView<Order> tblOrders = new TableView<>();
-        
-        setPrivateField(controller, "dpStart", dpStart);
-        setPrivateField(controller, "dpEnd", dpEnd);
-        setPrivateField(controller, "tblOrders", tblOrders);
-        
+        when(dpStart.getValue()).thenReturn(null);
+        when(dpEnd.getValue()).thenReturn(null);
+
         when(mockViewModel.getOrders()).thenReturn(Arrays.asList(testOrder1));
         when(mockViewModel.getStatus()).thenReturn("Encontrados: 1");
 
@@ -107,19 +121,16 @@ class HistoryWindowControllerTest {
         verify(mockViewModel, times(1)).setStartDate(null);
         verify(mockViewModel, times(1)).setEndDate(null);
         verify(mockViewModel, times(1)).search();
+        verify(tblOrders, times(1)).setItems(FXCollections.observableArrayList(mockViewModel.getOrders()));
+        verify(lblStatus, times(1)).setText("Encontrados: 1");
     }
 
     @Test
     void onSearch_withEmptyResults_handlesCorrectly() {
         // Arrange
-        DatePicker dpStart = new DatePicker(LocalDate.of(2023, 1, 1));
-        DatePicker dpEnd = new DatePicker(LocalDate.of(2023, 1, 31));
-        TableView<Order> tblOrders = new TableView<>();
-        
-        setPrivateField(controller, "dpStart", dpStart);
-        setPrivateField(controller, "dpEnd", dpEnd);
-        setPrivateField(controller, "tblOrders", tblOrders);
-        
+        when(dpStart.getValue()).thenReturn(LocalDate.of(2023, 1, 1));
+        when(dpEnd.getValue()).thenReturn(LocalDate.of(2023, 1, 31));
+
         when(mockViewModel.getOrders()).thenReturn(Arrays.asList());
         when(mockViewModel.getStatus()).thenReturn("Encontrados: 0");
 
@@ -130,6 +141,8 @@ class HistoryWindowControllerTest {
         verify(mockViewModel, times(1)).search();
         verify(mockViewModel, times(1)).getOrders();
         verify(mockViewModel, times(1)).getStatus();
+        verify(tblOrders, times(1)).setItems(FXCollections.observableArrayList(mockViewModel.getOrders()));
+        verify(lblStatus, times(1)).setText("Encontrados: 0");
     }
 
     @Test
@@ -144,6 +157,7 @@ class HistoryWindowControllerTest {
         // Assert
         verify(mockViewModel, times(1)).exportCsv();
         verify(mockViewModel, times(1)).getStatus();
+        verify(lblStatus, times(1)).setText("Exportado para: /tmp/export.csv");
     }
 
     @Test
@@ -158,6 +172,7 @@ class HistoryWindowControllerTest {
         // Assert
         verify(mockViewModel, times(1)).exportCsv();
         verify(mockViewModel, times(1)).getStatus();
+        verify(lblStatus, times(1)).setText("Nada para exportar");
     }
 
     @Test
@@ -172,19 +187,15 @@ class HistoryWindowControllerTest {
         // Assert
         verify(mockViewModel, times(1)).exportCsv();
         verify(mockViewModel, times(1)).getStatus();
+        verify(lblStatus, times(1)).setText("Nada para exportar");
     }
 
     @Test
     void onSearch_withOnlyStartDate_handlesCorrectly() {
         // Arrange
-        DatePicker dpStart = new DatePicker(LocalDate.of(2023, 1, 1));
-        DatePicker dpEnd = new DatePicker();
-        TableView<Order> tblOrders = new TableView<>();
-        
-        setPrivateField(controller, "dpStart", dpStart);
-        setPrivateField(controller, "dpEnd", dpEnd);
-        setPrivateField(controller, "tblOrders", tblOrders);
-        
+        when(dpStart.getValue()).thenReturn(LocalDate.of(2023, 1, 1));
+        when(dpEnd.getValue()).thenReturn(null);
+
         when(mockViewModel.getOrders()).thenReturn(Arrays.asList(testOrder1));
         when(mockViewModel.getStatus()).thenReturn("Encontrados: 1");
 
@@ -195,6 +206,8 @@ class HistoryWindowControllerTest {
         verify(mockViewModel, times(1)).setStartDate(LocalDate.of(2023, 1, 1));
         verify(mockViewModel, times(1)).setEndDate(null);
         verify(mockViewModel, times(1)).search();
+        verify(tblOrders, times(1)).setItems(anyList());
+        verify(lblStatus, times(1)).setText("Encontrados: 1");
     }
 
     @Test

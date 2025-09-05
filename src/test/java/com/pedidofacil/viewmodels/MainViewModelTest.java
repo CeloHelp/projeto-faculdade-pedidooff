@@ -307,7 +307,7 @@ class MainViewModelTest {
 
         // Assert
         assertTrue(mainViewModel.getStatusMessage().contains("Falha ao salvar pedido"));
-        verify(orderService, times(1)).createOrder(anyList(), any(PaymentMethod.class), any(Customer.class));
+        verify(orderService, times(1)).createOrder(anyList(), any(PaymentMethod.class), isNull());
     }
 
     @Test

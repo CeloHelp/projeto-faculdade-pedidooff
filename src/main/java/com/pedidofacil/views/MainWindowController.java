@@ -67,6 +67,9 @@ public class MainWindowController implements Initializable {
     @FXML private Button btnHistory;
     @FXML private Button btnReports;
     @FXML private Label lblTotal;
+    @FXML private Label lblSubtotal;
+    @FXML private Label lblDiscount;
+    @FXML private Label lblGrandTotal;
     @FXML private Label lblStatus;
 
     private final NumberFormat currency = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
@@ -338,7 +341,10 @@ public class MainWindowController implements Initializable {
     }
 
     private void updateTotalsAndStatus() {
-        lblTotal.setText(currency.format(vm.getTotal()));
+        lblTotal.setText(currency.format(vm.getTotal() != null ? vm.getTotal() : BigDecimal.ZERO));
+        lblSubtotal.setText(currency.format(vm.getSubtotal() != null ? vm.getSubtotal() : BigDecimal.ZERO));
+        lblDiscount.setText(currency.format(vm.getDiscount() != null ? vm.getDiscount() : BigDecimal.ZERO));
+        lblGrandTotal.setText(currency.format(vm.getGrandTotal() != null ? vm.getGrandTotal() : BigDecimal.ZERO));
         lblStatus.setText(vm.getStatusMessage());
     }
 

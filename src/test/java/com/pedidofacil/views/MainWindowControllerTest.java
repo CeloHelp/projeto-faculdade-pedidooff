@@ -9,8 +9,12 @@ import com.pedidofacil.viewmodels.OrderItemView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
+import javafx.application.Platform;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,24 +45,57 @@ class MainWindowControllerTest {
     private Product testProduct;
     private Customer testCustomer;
 
+    @Mock
+    private TextField txtQuantity;
+    @Mock
+    private TextField txtUnitPrice;
+    @Mock
+    private ComboBox<Product> cmbProducts;
+    @Mock
+    private ComboBox<Customer> cmbCustomer;
+    @Mock
+    private TableView<OrderItemView> tblItems;
+    @Mock
+    private Label lblTotal;
+    @Mock
+    private Label lblSubtotal;
+    @Mock
+    private Label lblDiscount;
+    @Mock
+    private Label lblGrandTotal;
+    @Mock
+    private Label lblStatus;
+
+    @BeforeAll
+    static void initJFX() {
+        Platform.startup(() -> {});
+        Platform.setImplicitExit(false);
+    }
+
     @BeforeEach
     void setUp() {
         controller = new MainWindowController(mockViewModel, mockSettings, mockContext);
-        
+
         testProduct = new Product("Produto Teste", "Marca A", "UN", new BigDecimal("10.00"));
         testCustomer = new Customer("Cliente Teste", "123456789");
-        
-        // Mock the settings
-        when(mockSettings.getStoreName()).thenReturn("Loja Teste");
-        when(mockSettings.getCnpj()).thenReturn("12.345.678/0001-90");
-        when(mockSettings.getPhone()).thenReturn("(11) 99999-9999");
-        
-        // Mock the view model
-        when(mockViewModel.getProducts()).thenReturn(Arrays.asList(testProduct));
-        when(mockViewModel.getCustomers()).thenReturn(Arrays.asList(testCustomer));
-        when(mockViewModel.getPaymentMethod()).thenReturn(PaymentMethod.CASH);
-        when(mockViewModel.getTotal()).thenReturn(BigDecimal.ZERO);
-        when(mockViewModel.getStatusMessage()).thenReturn("Status inicial");
+
+        // Initialize mocks for UI components
+        lenient().when(cmbProducts.getSelectionModel()).thenReturn(mock(javafx.scene.control.SingleSelectionModel.class));
+        lenient().when(cmbCustomer.getSelectionModel()).thenReturn(mock(javafx.scene.control.SingleSelectionModel.class));
+        lenient().when(cmbCustomer.getEditor()).thenReturn(mock(TextField.class));
+        lenient().when(tblItems.getItems()).thenReturn(FXCollections.observableArrayList());
+
+        // Use reflection to set private fields for testing
+        setPrivateField(controller, "txtQuantity", txtQuantity);
+        setPrivateField(controller, "txtUnitPrice", txtUnitPrice);
+        setPrivateField(controller, "cmbProducts", cmbProducts);
+        setPrivateField(controller, "cmbCustomer", cmbCustomer);
+        setPrivateField(controller, "tblItems", tblItems);
+        setPrivateField(controller, "lblTotal", lblTotal);
+        setPrivateField(controller, "lblSubtotal", lblSubtotal);
+        setPrivateField(controller, "lblDiscount", lblDiscount);
+        setPrivateField(controller, "lblGrandTotal", lblGrandTotal);
+        setPrivateField(controller, "lblStatus", lblStatus);
     }
 
     @Test
@@ -73,15 +110,9 @@ class MainWindowControllerTest {
     @Test
     void onAddItem_withValidData_callsViewModelAddItem() {
         // Arrange
-        TextField txtQuantity = new TextField("2");
-        TextField txtUnitPrice = new TextField("R$ 10,00");
-        ComboBox<Product> cmbProducts = new ComboBox<>();
-        cmbProducts.getSelectionModel().select(testProduct);
-        
-        // Use reflection to set private fields for testing
-        setPrivateField(controller, "txtQuantity", txtQuantity);
-        setPrivateField(controller, "txtUnitPrice", txtUnitPrice);
-        setPrivateField(controller, "cmbProducts", cmbProducts);
+        when(txtQuantity.getText()).thenReturn("2");
+        when(txtUnitPrice.getText()).thenReturn("R$ 10,00");
+        when(cmbProducts.getSelectionModel().getSelectedItem()).thenReturn(testProduct);
         
         when(mockViewModel.getItems()).thenReturn(Arrays.asList(new OrderItemView(testProduct, new BigDecimal("2"), new BigDecimal("10.00"))));
 
@@ -92,33 +123,27 @@ class MainWindowControllerTest {
         verify(mockViewModel, times(1)).setQuantity(new BigDecimal("2"));
         verify(mockViewModel, times(1)).setUnitPrice(new BigDecimal("10.00"));
         verify(mockViewModel, times(1)).addItem();
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
     void onAddItem_withInvalidData_handlesException() {
         // Arrange
-        TextField txtQuantity = new TextField("invalid");
-        TextField txtUnitPrice = new TextField("invalid");
-        ComboBox<Product> cmbProducts = new ComboBox<>();
-        
-        setPrivateField(controller, "txtQuantity", txtQuantity);
-        setPrivateField(controller, "txtUnitPrice", txtUnitPrice);
-        setPrivateField(controller, "cmbProducts", cmbProducts);
+        when(txtQuantity.getText()).thenReturn("invalid");
+        when(txtUnitPrice.getText()).thenReturn("invalid");
 
         // Act
         controller.onAddItem(null);
 
         // Assert
         verify(mockViewModel, never()).addItem();
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
     void onFinalize_withSelectedCustomer_callsViewModelFinalize() {
         // Arrange
-        ComboBox<Customer> cmbCustomer = new ComboBox<>();
-        cmbCustomer.getSelectionModel().select(testCustomer);
-        
-        setPrivateField(controller, "cmbCustomer", cmbCustomer);
+        when(cmbCustomer.getSelectionModel().getSelectedItem()).thenReturn(testCustomer);
 
         // Act
         controller.onFinalize(null);
@@ -126,16 +151,14 @@ class MainWindowControllerTest {
         // Assert
         verify(mockViewModel, times(1)).setCustomerName("Cliente Teste");
         verify(mockViewModel, times(1)).finalizeOrder();
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
     void onFinalize_withTextInEditor_callsViewModelFinalize() {
         // Arrange
-        ComboBox<Customer> cmbCustomer = new ComboBox<>();
-        cmbCustomer.setEditable(true);
-        cmbCustomer.getEditor().setText("Novo Cliente");
-        
-        setPrivateField(controller, "cmbCustomer", cmbCustomer);
+        when(cmbCustomer.isEditable()).thenReturn(true);
+        when(cmbCustomer.getEditor().getText()).thenReturn("Novo Cliente");
 
         // Act
         controller.onFinalize(null);
@@ -143,6 +166,7 @@ class MainWindowControllerTest {
         // Assert
         verify(mockViewModel, times(1)).setCustomerName("Novo Cliente");
         verify(mockViewModel, times(1)).finalizeOrder();
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
@@ -152,17 +176,15 @@ class MainWindowControllerTest {
 
         // Assert
         verify(mockViewModel, times(1)).printOrSavePdf();
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
     void onNewOrder_callsViewModelNewOrder() {
         // Arrange
-        TableView<OrderItemView> tblItems = new TableView<>();
         ObservableList<OrderItemView> items = FXCollections.observableArrayList();
         items.add(new OrderItemView(testProduct, BigDecimal.ONE, BigDecimal.TEN));
-        tblItems.setItems(items);
-        
-        setPrivateField(controller, "tblItems", tblItems);
+        when(tblItems.getItems()).thenReturn(items);
 
         // Act
         controller.onNewOrder(null);
@@ -170,6 +192,7 @@ class MainWindowControllerTest {
         // Assert
         verify(mockViewModel, times(1)).newOrder();
         assertTrue(tblItems.getItems().isEmpty());
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
@@ -179,6 +202,7 @@ class MainWindowControllerTest {
         assertDoesNotThrow(() -> {
             controller.onOpenHistory(null);
         });
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
@@ -188,6 +212,7 @@ class MainWindowControllerTest {
         assertDoesNotThrow(() -> {
             controller.onOpenReports(null);
         });
+        verify(lblStatus, times(1)).setText(anyString());
     }
 
     @Test
@@ -195,15 +220,15 @@ class MainWindowControllerTest {
         // Arrange
         when(mockViewModel.createOrFindCustomer("Novo Cliente", "123")).thenReturn(testCustomer);
         
-        ComboBox<Customer> cmbCustomer = new ComboBox<>();
         ObservableList<Customer> customers = FXCollections.observableArrayList();
-        cmbCustomer.setItems(customers);
+        when(cmbCustomer.getItems()).thenReturn(customers);
         
         setPrivateField(controller, "cmbCustomer", cmbCustomer);
 
         // Act & Assert - This test verifies the method doesn't throw exceptions
         // In a real scenario, you would mock the Dialog and test the result
         assertDoesNotThrow(() -> {
+            verify(lblStatus, times(1)).setText(anyString());
             controller.onNewCustomer(null);
         });
     }

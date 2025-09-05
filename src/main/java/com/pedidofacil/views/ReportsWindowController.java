@@ -437,31 +437,20 @@ public class ReportsWindowController implements Initializable {
     // Método auxiliar para formatar labels de data
     public String formatDateLabel(String date) {
         try {
-            // Tenta diferentes formatos de data
-            LocalDate ld = null;
-            
-            // Formato ISO (yyyy-MM-dd)
+            LocalDate ld;
+            // Primeiro tenta formato ISO (yyyy-MM-dd) que é o padrão do banco
             try {
                 ld = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
             } catch (Exception e1) {
-                // Formato brasileiro (dd/MM/yyyy)
+                // Se falhar, tenta formato brasileiro (dd/MM/yyyy)
                 try {
                     ld = LocalDate.parse(date, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 } catch (Exception e2) {
-                    // Se for um timestamp numérico, converte
-                    try {
-                        long timestamp = Long.parseLong(date);
-                        ld = LocalDateTime.ofInstant(
-                            java.time.Instant.ofEpochMilli(timestamp), 
-                            java.time.ZoneId.systemDefault()).toLocalDate();
-                    } catch (Exception e3) {
-                        // Se nada funcionar, retorna a string original
-                        return date;
-                    }
+                    // Retorna a string original se não conseguir parsear
+                    return date.length() > 10 ? date.substring(0, 10) : date;
                 }
             }
-            
-            return ld.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            return ld.format(DateTimeFormatter.ofPattern("dd/MM"));
         } catch (Exception e) {
             return date;
         }
