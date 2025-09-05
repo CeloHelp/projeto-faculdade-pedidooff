@@ -435,7 +435,7 @@ public class ReportsWindowController implements Initializable {
         }
     }
     // Método auxiliar para formatar labels de data
-    private String formatDateLabel(String date) {
+    public String formatDateLabel(String date) {
         try {
             LocalDate ld = LocalDate.parse(date);
             return ld.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
