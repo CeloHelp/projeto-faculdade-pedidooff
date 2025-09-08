@@ -157,6 +157,6 @@ pedido-offline/
 ---
 
 ## 👤 Autor
-**Marcelo Henrique Pacobello**  
+**Marcelo Henrique Pacobello** - **RA: 24001795**
 - LinkedIn: https://www.linkedin.com/in/marcelo-henrique-pacobello/  
 - GitHub: https://github.com/CeloHelp
